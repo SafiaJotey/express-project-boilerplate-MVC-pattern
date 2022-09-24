@@ -12,16 +12,24 @@ app.use(express.json());
 const port = process.env.PORT || 5000;
 
 //import
-const dbConnect = require('./utils/dbConnect');
+const { connectToServer } = require('./utils/dbConnect');
 const toolsRoute = require('./routes/v1/tools.route');
-const { viewcount } = require('./middlewires/viewcount.Js');
-const { errorHandler } = require('./middlewires/errorHandler');
+const errorHandler = require('./middlewires/errorHandler');
 
 //application leve midlewires
 // app.use(viewcount);
 
 //DB connection
-dbConnect();
+connectToServer((err) => {
+  if (!err) {
+    //listen
+    app.listen(port, () => {
+      console.log('the app is running on port', port);
+    });
+  } else {
+    console.log(err);
+  }
+});
 
 //Routes
 app.use('/api/v1/tools', toolsRoute);
@@ -36,10 +44,7 @@ app.all('*', (req, res) => {
 
 //global error handler
 app.use(errorHandler);
-//listen
-app.listen(port, () => {
-  console.log('the app is running on port', port);
-});
+
 process.on('unhandledRejection', (error) => {
   console.log(error.name, error.message);
   app.close(() => {
